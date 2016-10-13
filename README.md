@@ -2,6 +2,17 @@
 
 A URI Manipulation module aimed at web use. Motivated by the [Quora challenge](https://www.quora.com/challenges#python_uri), which is why `murl` has its own implementation of some functions in `urllib` and `urlparse`.
 
+## URI Syntax
+`` scheme:[//[user:password@]host[:port]][/]path[?query][#fragment]`
+Where:
+  - Scheme must start with a letter followed by letters, digits, `+`, `.`, or `-` and then a colon.
+  - Authority part which has username, password, host, and port has to start with a // and end with the end of the URI, a `/`, a `?`, or a `#`, whichever comes first.
+  - Path must begin with `/` whenever there's an authority present. May begin with `/` if not, but never `//`.
+  - Query must begin with `?` and is a string of any number of key=value pairs delimetered with `&` or `;` usually.
+  - Fragment must begin with `#` and span until the end of the URI.
+  - All unsafe characters and unreserved characters in any given URI component must be percent-encoded in `% HEXDIG HEXDIG` format.
+  - Domains (without subdomains, etc) must be `ONE_DOT_DELIMETERED_SEGMENT` + `.` + `PUBLIC_SUFFIX`, where `PUBLIC_SUFFIX` can have a number of dot-delimetered segments and a wide range of lengths/etc.
+
 ## General Use
 
 - Create a `Murl` object using an existing relative or absolute but valid/standard URI or without any parameters to construct the URI dynamically.
