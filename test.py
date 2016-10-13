@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-from murl import Murl
+from murl import Murl, urlende
 
 if __name__ == "__main__":
-	name = input('Who dis? ')
-	foo = Murl('Bearl')
-	foo.whois(name)
-	other = input('And who dat? ')
-	foo.whodat(other)
+	foo = Murl('http://google.com')
+	foo.addQuery('hello!', 'world&')
+	print(foo)
+	print(foo.getQuery('hello!'))
