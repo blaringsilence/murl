@@ -19,19 +19,23 @@ class Murl(object):
     def scheme(self, val):
         val = val.lower()
         if re.match(r'^([a-z]+)([a-z]|\d|\+|\.|\-)*$', val) is None:
-            raise ValueError('Scheme has to start with a letter, followed by letters, digits, +, ., or -.')
+            raise ValueError('Scheme has to start with a letter, followed by '
+                            + 'letters, digits, +, ., or -.')
         else:
             self._attrs['scheme'] = val
 
     def _getAuthProperty(self, prop):
-        return None if self._attrs['authority'] == '' or self._attrs['authority'][prop] == '' else self._attrs['authority'][prop]
+        return None if self._attrs['authority'] == '' or \
+        self._attrs['authority'][prop] == '' else self._attrs['authority'][prop]
 
     def _setAuthProperty(self, prop, val):
         other = 'password' if prop == 'username' else 'username'
         if self._attrs['authority'] == '':
-            raise ValueError('This URI has no host specified. Add one using the \'host\' property.')
+            raise ValueError('This URI has no host specified. Add one using the'
+                            + ' \'host\' property.')
         elif prop != 'port' and self._attrs['authority'][other] == '':
-            raise ValueError('This URI has no ' + other + ' already set. To set both username and password, use the \'auth\' property.')
+            raise ValueError('This URI has no ' + other + ' already set. To set'
+                            +' both, use  the \'auth\' property.')
         else: 
             self._attrs['authority'][prop] = val
 
@@ -43,25 +47,36 @@ class Murl(object):
     def host(self, val):
         if self._attrs['authority'] == '':
             username = password = port = ''
-            self._attrs['authority'] = dict(username=username, password=password, port=port, host=val)
+            self._attrs['authority'] = dict(username=username, 
+                                            password=password, 
+                                            port=port,
+                                            host=val
+                                            )
         else:
-            if ('[' in val and not ']' in val) or (']' in val and not '[' in val):
+            if ('[' in val and not ']' in val) or \
+                (']' in val and not '[' in val):
                 raise ValueError('Host has imbalanced IPv6 brackets.')
             self._attrs['authority']['host'] = val.lower()
 
     @property
     def domain(self):
-        if self.host is None or '[' in self.host or re.match(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', self.host) is not None:
+        IPv4 = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}' \
+             + r'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+        if self.host is None or '[' in self.host or \
+        re.match(IPv4, self.host) is not None:
             return self.host
         else: # not None, IPv6 or IPv4
         # We want to extract the domain + public suffix
-            DATA_PATH = pkg_resources.resource_filename(__name__, 'data/public_suffix_list.dat')
+            LOC = 'data/public_suffix_list.dat'
+            DATA_PATH = pkg_resources.resource_filename(__name__, LOC)
             content = open(DATA_PATH)
             public_suffix = ''
             for i, line in enumerate(content):
                 if not line.startswith('//') and not line.startswith('\n'):
                     suffix = '.' + line.split('\n')[0]
-                    if suffix in self.host and self.host.rfind(suffix) + len(suffix) == len(self.host) and len(public_suffix) < len(suffix):
+                    if suffix in self.host and \
+                    self.host.rfind(suffix) + len(suffix) == len(self.host) and \
+                     len(public_suffix) < len(suffix):
                         public_suffix = suffix
             
             if public_suffix != '':
@@ -73,23 +88,30 @@ class Murl(object):
 
     @domain.setter
     def domain(self, val):
-        raise ValueError('Cannot set domain. Can, however, set entire host. Use the \'host\' property to do that.')
+        raise ValueError('Cannot set domain. Can, however, set entire host. '
+                        + 'Use the \'host\' property to do that.')
     
 
     @property
     def auth(self):
-        notFound = self._attrs['authority'] == '' or self._attrs['authority']['username'] == ''
-        return None if notFound else dict(username = self._attrs['authority']['username'], password = self._attrs['authority']['password'])
+        notFound = self._attrs['authority'] == '' or \
+                   self._attrs['authority']['username'] == ''
+        return None if notFound \
+                else dict(username = self._attrs['authority']['username'],
+                         password = self._attrs['authority']['password'])
 
     @auth.setter
     def auth(self, authdict):
         if self._attrs['authority'] == '':
-            raise ValueError('Cannot add authentication without host. Add host using the \'host\' property.')
-        elif type(authdict) is dict and 'username' in authdict and 'password' in authdict:
+            raise ValueError('Cannot add authentication without host. '
+                            +'Add host using the \'host\' property.')
+        elif type(authdict) is dict and 'username' in authdict and \
+            'password' in authdict:
             self._attrs['authority']['username'] = authdict['username']
             self._attrs['authority']['password'] = authdict['password'] 
         else:
-            raise ValueError('Auth value must be a dict with the keys \'username\' and \'password\'.')
+            raise ValueError('Auth value must be a dict with the keys '
+                            +'\'username\' and \'password\'.')
     
     @property
     def username(self):
@@ -127,7 +149,7 @@ class Murl(object):
 
     def addQuery(self, key, val, encode=True, spaceIsPlus=True):
         oldQ = self._attrs['query']
-        key = urlende.encode_query(key, spaceIsPlus) if encode else key
+        key = urlende.encode_query(key, spaceIsPlus) if encode else key 
         val = urlende.encode_query(val, spaceIsPlus) if encode else val
         if oldQ == '': # empty
             temp = {}
@@ -136,11 +158,11 @@ class Murl(object):
         else:
             self._attrs['query'][key.lower()] = val
 
-    def getQuery(self, key, decodeValue=True, keyEncoded=False, spaceIsPlus=True):
+    def getQuery(self, key, decodeVal=True, keyEncoded=False, spaceIsPlus=True):
         if self._attrs['query'] != '':
             key = key if keyEncoded else urlende.encode_query(key, spaceIsPlus)
             val = self._attrs['query'][key.lower()] 
-            return urlende.decode_query(val, spaceIsPlus) if decodeValue else val
+            return urlende.decode_query(val, spaceIsPlus) if decodeVal else val
         else:
             raise KeyError('Key does not exist.')
 
@@ -157,16 +179,17 @@ class Murl(object):
 
     @property
     def queryString(self):
-        return '?' + urlsec._assembleQuery(self._attrs['query'], self.queryDelim)
+        return '?' \
+                + urlsec._assembleQuery(self._attrs['query'], self.queryDelim)
 
     @property
     def fragment(self):
-        return None if self._attrs['fragment'] == '' else self._attrs['fragment']
+        return None if self._attrs['fragment'] == '' \
+                else self._attrs['fragment']
 
     @fragment.setter
-    def fragment(self, val):
-        self._attrs['fragment'] = val
-
+    def fragment(self, val, encoded=False):
+        self._attrs['fragment'] = val if encoded else urlende.encode(val)
     
         
     
