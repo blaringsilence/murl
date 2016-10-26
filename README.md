@@ -10,6 +10,7 @@ Where:
   - Authority part which has username, password, host, and port has to start with a // and end with the end of the URI, a `/`, a `?`, or a `#`, whichever comes first.
   - Path must begin with `/` whenever there's an authority present. May begin with `/` if not, but never `//`.
   - Query must begin with `?` and is a string of any number of key=value pairs delimetered with `&` or `;` usually.
+  - Keys in Query can be duplicates and indicate multiple values for the same thing.
   - Fragment must begin with `#` and span until the end of the URI.
   - All unsafe characters and unreserved characters in any given URI component must be percent-encoded in `% HEXDIG HEXDIG` format.
   - Domains (without subdomains, etc) must be `ONE_DOT_DELIMETERED_SEGMENT` + `.` + `PUBLIC_SUFFIX`, where `PUBLIC_SUFFIX` can have a number of dot-delimetered segments and a wide range of lengths/etc.
