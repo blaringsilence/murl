@@ -4,6 +4,7 @@ A URI Manipulation module aimed at web use. Motivated by the [Quora challenge](h
 
 ## URI Syntax
 `` scheme:[//[user:password@]host[:port]][/]path[?query][#fragment]`
+
 Where:
   - Scheme must start with a letter followed by letters, digits, `+`, `.`, or `-` and then a colon.
   - Authority part which has username, password, host, and port has to start with a // and end with the end of the URI, a `/`, a `?`, or a `#`, whichever comes first.
