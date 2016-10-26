@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import re
 
 # This module %-encodes and decodes parts of URIs, as well as deals 
 # with templating
@@ -13,7 +14,7 @@ def encode(part, safe='/'):
     total_safe = safe + SAFE_CHARS + '%'
     for i in range(256):
         c = chr(i)
-        if c not in total_safe:
+        if c not in total_safe and c in part:
             code = ('%%%02X' % i)
             part = part.replace(c, code)
     return part
@@ -39,12 +40,10 @@ def decode(part):
     return ''.join(res)
 
 def decode_query(part, plus=True):
-    part = decode(part)
     if plus:
         part = part.replace('+', ' ')
+    part = decode(part)
     return part
 
-
-
-
-
+def template_vars(part):
+    return re.match(r'\{(\d|\s|\w)+\}', part)

@@ -72,16 +72,14 @@ def _divideAuth(authority):
                             + 'maybe you forgot an @?')
     return dict(username=username, password=password, host=host, port=port)
     
-def _divideQuery(querystring):
+def _divideQuery(querystring, delim):
 # Divide query string into dict of keys and values if it's divided by & or ;, 
 # otherwise, will try to divide into single keyvvalue pair, otherwise will
 # present as is.
     qSplit = [querystring]
 
-    if '&' in querystring:
-        qSplit = querystring.split('&')
-    elif ';' in querystring:
-        qSplit = querystring.split(';')
+    if delim in querystring:
+        qSplit = querystring.split(delim)
 
     result = {}
     i = 0
@@ -94,14 +92,18 @@ def _divideQuery(querystring):
             result[i] = '' if len(pair) == 1 else pair[1:]
         else:
             key = pair[:eqPlace].lower()
-            result[key] = '' if len(pair) == len(key) + 1 else pair[eqPlace+1:]
+            value = '' if len(pair) == len(key) + 1 else pair[eqPlace+1:]
+            if key in result:
+                result[key].append(value)
+            else:
+                result[key] = [value]
         i+=1
 
     return result
 
 
 
-def divideURL(url): 
+def divideURL(url, queryDelim='&'): 
     scheme = authority = path = query = fragment = ''
     hasPath = True
 
@@ -131,7 +133,7 @@ def divideURL(url):
 
     if url.startswith('?') and len(url) > 1: # you have a querystring
         queryEnd = _getPartEnd(url[1:], '#')
-        query = _divideQuery(url[1:queryEnd+1])
+        query = _divideQuery(url[1:queryEnd+1], queryDelim)
         url = url[queryEnd+1:]
 
     if url.startswith('#') and len(url) > 1: # you have a fragment
@@ -151,6 +153,7 @@ def _ifNotEmptyAdd(what, addition):
         res += addition
     return res
 
+
 def _assembleQuery(querydict, queryDelim):
     res = ''
     i = 0
@@ -158,8 +161,13 @@ def _assembleQuery(querydict, queryDelim):
         k = ''
         if type(key) is not int:
             k = key
-        v = querydict[key]
-        res+='='.join((k,v))
+        arr = querydict[key]
+        j = 0
+        for v in arr:
+            res+='='.join((k,v))
+            if j != len(arr) - 1:
+                res+=queryDelim
+            j+=1
         if i != len(querydict) - 1:
             res+=queryDelim
         i+=1

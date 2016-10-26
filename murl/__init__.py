@@ -4,12 +4,21 @@ import re
 import pkg_resources
 
 class Murl(object):
-    def __init__(self, url, queryDelim='&'):
-        self._attrs = urlsec.divideURL(url)
-        self.queryDelim = queryDelim
+    def __init__(self, url='', queryDelim='&', isTemplate=False):
+        self._attrs = urlsec.divideURL(url, queryDelim)
+        self._queryDelim = queryDelim
+        self.isTemplate = isTemplate
 
     def __str__(self):
         return urlsec.assembleURL(self._attrs, self.queryDelim)
+
+    @property
+    def queryDelim(self):
+        return self._queryDelim
+    
+    @queryDelim.setter
+    def queryDelim(self, val):
+        self._queryDelim = val
 
     @property
     def scheme(self):
@@ -142,10 +151,10 @@ class Murl(object):
         return None if self._attrs['path'] == '' else self._attrs['path']
     
     @path.setter
-    def path(self, val):
+    def path(self, val, encoded=False):
         if val.startswith('//'):
             raise ValueError('Path cannot start with two forward slashes.')
-        self._attrs['path'] = val
+        self._attrs['path'] = val if encoded else urlende.encode(val)
 
     def addQuery(self, key, val, encode=True, spaceIsPlus=True):
         oldQ = self._attrs['query']
@@ -153,16 +162,23 @@ class Murl(object):
         val = urlende.encode_query(val, spaceIsPlus) if encode else val
         if oldQ == '': # empty
             temp = {}
-            temp[key.lower()] = val
+            temp[key.lower()] = [val]
             self._attrs['query'] = temp
+        elif key.lower() in self._attrs['query']:
+            self._attrs['query'][key.lower()].append(val)
         else:
-            self._attrs['query'][key.lower()] = val
+            self._attrs['query'][key.lower()] = [val]
 
     def getQuery(self, key, decodeVal=True, keyEncoded=False, spaceIsPlus=True):
         if self._attrs['query'] != '':
             key = key if keyEncoded else urlende.encode_query(key, spaceIsPlus)
-            val = self._attrs['query'][key.lower()] 
-            return urlende.decode_query(val, spaceIsPlus) if decodeVal else val
+            arr = self._attrs['query'][key.lower()]
+            res = [] if decodeVal else arr
+            if decodeVal:
+                for val in arr:
+                    enc = urlende.decode_query(val, spaceIsPlus)
+                    res.append(enc)
+            return res
         else:
             raise KeyError('Key does not exist.')
 
@@ -189,14 +205,5 @@ class Murl(object):
 
     @fragment.setter
     def fragment(self, val, encoded=False):
-        self._attrs['fragment'] = val if encoded else urlende.encode(val)
-    
-        
-    
-    
-    
-    
-    
-
-
-
+        self._attrs['fragment'] = val if encoded \
+                                else urlende.encode(val, safe='')
