@@ -156,10 +156,10 @@ class Murl(object):
             raise ValueError('Path cannot start with two forward slashes.')
         self._attrs['path'] = val if encoded else urlende.encode(val)
 
-    def addQuery(self, key, val, encode=True, spaceIsPlus=True):
+    def addQuery(self, key, val, keyEncode=True, valEncode=True, spaceIsPlus=True):
         oldQ = self._attrs['query']
-        key = urlende.encode_query(key, spaceIsPlus) if encode else key 
-        val = urlende.encode_query(val, spaceIsPlus) if encode else val
+        key = urlende.encode_query(key, spaceIsPlus) if keyEncode else key 
+        val = urlende.encode_query(val, spaceIsPlus) if valEncode else val
         if oldQ == '': # empty
             temp = {}
             temp[key.lower()] = [val]
@@ -182,13 +182,29 @@ class Murl(object):
         else:
             raise KeyError('Key does not exist.')
 
-    def removeQuery(self, key, keyEncoded=False, spaceIsPlus=True):
+    def changeQuery(self, key, newVal, val=None, valEncoded=False, keyEncoded=False, spaceIsPlus=True):
+        # 1. Remove current query
+        self.removeQuery(key, val, valEncoded, keyEncoded, spaceIsPlus)
+        # 2. Add the new query
+        self.addQuery(key, newVal, not keyEncoded, not valEncoded, spaceIsPlus)
+
+    def removeQuery(self, key, val=None, valEncoded=False, keyEncoded=False, spaceIsPlus=True):
     # Will raise a KeyError if not a key that exists
         key = key if keyEncoded else urlende.encode_query(key, spaceIsPlus)
-        if self._attrs['query'] != '' and key in self._attrs['query']:
-            del self._attrs['query'][key.lower()]
+        if self._attrs['query'] != '' and key in self._attrs['query']: 
+            if val is None:
+                del self._attrs['query'][key.lower()]
+            else:
+                val = val if valEncoded else urlende.encode_query(val, spaceIsPlus)
+                arr = self._attrs['query'][key.lower()]
+                if val in arr:
+                    self._attrs['query'][key.lower()] = [x for x in arr if x != val]
+                else:
+                    raise ValueError('This value for this key does not exist.')
+                if len(self._attrs['query'][key.lower()]) == 0:
+                    del self._attrs['query'][key.lower()]
             if len(self._attrs['query']) == 0:
-                self._attrs['query'] = ''
+                    self._attrs['query'] = ''
         else:
             raise KeyError('This key does not exist.')
 

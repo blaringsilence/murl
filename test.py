@@ -8,5 +8,5 @@ if __name__ == "__main__":
     print(foo.getQuery('hello!'))
     print(foo.getQuery('this'))
     print(foo.domain)
-    foo.fragment = 'hello there sugaaaa!!!!???//'
-    print(foo.domain)
+    foo.changeQuery('this', 'thahose', 'that')
+    print(foo)
