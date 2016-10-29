@@ -1,6 +1,10 @@
 # murl
 
+[![Documentation Status](https://readthedocs.org/projects/mrf-murl/badge/?version=latest)](http://mrf-murl.readthedocs.io/en/latest/?badge=latest)
+
 A URI Manipulation module aimed at web use. Motivated by the [Quora challenge](https://www.quora.com/challenges#python_uri), which is why `murl` has its own implementation of some functions in `urllib` and `urlparse`.
+
+This README only has a very brief outline. Complete documentation can be found [here](http://mrf-murl.readthedocs.io).
 
 ## URI Syntax
 `` scheme:[//[user:password@]host[:port]][/]path[?query][#fragment]`
