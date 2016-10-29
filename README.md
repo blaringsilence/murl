@@ -9,7 +9,7 @@ This README only has a very brief outline. Complete documentation can be found [
 Note: As of sometime between October 13th and October 29th, 2016, this challenge was removed from Quora. A copy of the prompt, however, can be found [in my blog post](http://blog.maarouf.me/post/151745263197/murl-init).
 
 ## URI Syntax
-`` scheme:[//[user:password@]host[:port]][/]path[?query][#fragment]`
+` scheme:[//[user:password@]host[:port]][/]path[?query][#fragment]`
 
 Where:
   - Scheme must start with a letter followed by letters, digits, `+`, `.`, or `-` and then a colon.
@@ -22,6 +22,11 @@ Where:
   - Domains (without subdomains, etc) must be `ONE_DOT_DELIMETERED_SEGMENT` + `.` + `PUBLIC_SUFFIX`, where `PUBLIC_SUFFIX` can have a number of dot-delimetered segments and a wide range of lengths/etc.
 
 ## General Use
+
+- Install using pip: 
+  ```bash 
+  $ pip install mrf-murl
+  ```
 
 - Create a `Murl` object using an existing relative or absolute but valid/standard URI or without any parameters to construct the URI dynamically.
 - Add/change/get URI components:
