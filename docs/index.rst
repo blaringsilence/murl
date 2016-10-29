@@ -15,11 +15,13 @@ Introduction
 ------------
 About
 ~~~~~
-murl is a URI manipulation module aimed at web use. Motivated by the `Python URI Quora challenge`_, which is why it has its own implementations of functions already available in `urllib`_ and similar components of the Python Standard Library.
+murl is a URI manipulation module aimed at web use. Motivated by the **Python URI Quora challenge** (see note), which is why it has its own implementations of functions already available in `urllib`_ and similar components of the Python Standard Library.
 
 The idea is to parse an existing URI into a Murl object and manipulate its components flexibly according to the standards mentioned in `RFC 3986`_ and other relevant documentation (details on that in the rules below), or alternatively, create an empty Murl object and add/change components on the fly.
 
 `Logo Credit`_
+
+.. note:: As of sometime between October 13th and October 29th, 2016, this challenge was removed. There's a copy of the prompt, however, `in my blog post`_.
 
 Rules
 ~~~~~
@@ -147,11 +149,11 @@ Docs
 
 
 
-.. _Python URI Quora challenge: https://www.quora.com/challenges#python_uri
 .. _urllib: https://docs.python.org/3/library/urllib.html
 .. _RFC 3986: https://tools.ietf.org/html/rfc3986
 .. _Public Suffix list: https://publicsuffix.org/
 .. _Logo Credit: http://www.flaticon.com/authors/vectors-market
+.. _in my blog post: http://blog.maarouf.me/post/151745263197/murl-init
 
 
 
