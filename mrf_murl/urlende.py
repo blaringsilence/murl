@@ -1,15 +1,23 @@
 #!/usr/bin/env python3
-import re
+"""
+URL Encode/Decode *(urlende)*
+=============================
+"""
 
-# This module %-encodes and decodes parts of URIs, as well as deals 
-# with templating
+# This module %-encodes and decodes parts of URIs
 
 SAFE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWSYZ' \
             +'abcdefghijklmnopqrstuvwxyz0192837465-._~'
+"""Characters that are always URI-safe."""
 
 def encode(part, safe='/'):
-# Assume we're encoding a path, so by default the safe parameter = /
-# When encoding a string with certain reserved chars, include in safe
+    """Percent-encode a component of a URI.
+    Params:
+
+    - part (str): component of the URI.
+    - safe (str, put together if more than 1 char): Optional. Char(s) not to encode
+    along with SAFE_CHARS. Reserved chars, for example.
+    """
     part = part.replace('%', '%25') # so nothing gets encoded twice
     total_safe = safe + SAFE_CHARS + '%'
     for i in range(256):
@@ -20,14 +28,25 @@ def encode(part, safe='/'):
     return part
 
 def encode_query(part, plus=True, safe=''):
+    """Encode something that is part of a query (key, or value) or path.
+    Params:
+
+    - part (str): key or value.
+    - plus (bool): Optional. True if space should be encoded as + instead of %20.
+    - safe (str): Optional. Char(s) not to encode.
+    """
 # Plus = True when space = + rather than '%20'
-# We can use encode right away for '%20' but why not both
     part = encode(part, safe=safe+' ')
     spaceReplace = '+' if plus else '%20'
     part = part.replace(' ', spaceReplace)
     return part
 
 def decode(part):
+    """Decode a part of a URI which has already been percent-encoded.
+    Params:
+
+    - part (str): percent-encoded URI component.
+    """
     all_parts = part.split('%')
     part_list = all_parts[1:]
     res = [all_parts[0]]
@@ -40,10 +59,13 @@ def decode(part):
     return ''.join(res)
 
 def decode_query(part, plus=True):
+    """Decode something that is part of a query (key, or value) or path.
+    Params:
+
+    - part (str): part to be decoded.
+    - plus (bool): Optional. True if space is + instead of %20.
+    """
     if plus:
         part = part.replace('+', ' ')
     part = decode(part)
     return part
-
-def template_vars(part):
-    return re.match(r'\{(\d|\s|\w)+\}', part)

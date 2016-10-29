@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+"""
+URL Section *(urlsec)*
+======================
+"""
+
 # This module deals with the format of URI's
 # The general format, citing RFC 3986 (2005), is:
 #   scheme:[//[user:password@]host[:port]][/]path[?query][#fragment]
@@ -51,8 +56,8 @@ def _divideAuth(authority):
                         + 'the authority without there being an @ '
                         + 'for the authentication.')
     else:
-        if ('[' in authority and not ']' in authority) or \
-            (']' in authority and not '[' in authority):
+        if ('[' in authority and not ']' in authority[authority.index('['):]) or \
+            (']' in authority and not '[' in authority[:authority.index(']')]):
             raise ValueError('Host has imbalanced IPv6 brackets.')
         elif authority.startswith('[') and ']' in authority:
             lastBracket = authority.find(']')
@@ -64,9 +69,9 @@ def _divideAuth(authority):
         elif authority.count(':') == 1 and len(authority) > colonPlace + 1:
             host = authority[:colonPlace] if host == '' else host
             port = int(authority[colonPlace+1:])
-            if port < 0 or port > 65536:
+            if port < 1 or port > 65535:
                 raise ValueError('Port number should be between '
-                                +'0 and 65536 inclusive.')
+                                +'1 and 65535 inclusive.')
         elif authority.count(':') > 1:
             raise ValueError('Too many colons in this host, '
                             + 'maybe you forgot an @?')
@@ -104,6 +109,27 @@ def _divideQuery(querystring, delim):
 
 
 def divideURL(url, queryDelim='&'): 
+    """Divides a URL into a dict with the following keys,
+    whose values are an empty str if optional and not set:
+
+    - scheme (str)
+    - authority (dict. Keys: username, password, host, port)
+    - path (str)
+    - query (dict. Keys are query keys = list of their values)
+    - fragment (str)
+
+    Can raise a *ValueError* if:
+        
+    - There is an '@' in an existing Authority without there being both a username:password pair.
+    - There is no host specified in an existing Authority.
+    - Host has imbalanced IPv6 brackets.
+    - Port number is not between 1 and 65535 inclusive.
+    - There is more than one colon in Authority outside username:password and without the host being IPv6.
+
+    Params:
+    - url (str): the URI to be divided.
+    - queryDelim (str): Optional. Delimeter for the query key=value pairs. Recommended: '&' or ';'.
+    """
     scheme = authority = path = query = fragment = ''
     hasPath = True
 
@@ -180,7 +206,11 @@ def _assemblePath(authority, path):
         return path
 
 def assembleURL(urldict, queryDelim='&'):
-# Re-assemble a URL dict divided by this same module (or uses same syntax)
+    """Re-assemble a URL dict divided by this module, or uses same syntax.
+    Params:
+    - urldict (dict with keys as the ones returned by divideURL()).
+    - queryDelim (str): Optional. Delimeter for the query key=value pairs. Recommended to be '&' or ';'.
+    """
     res = ''
     res += _ifNotEmptyAdd(urldict['scheme'], urldict['scheme'] + ':')
     if urldict['authority'] != '':
