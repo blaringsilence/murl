@@ -89,17 +89,17 @@ class Murl(object):
 
     @host.setter
     def host(self, val):
+        if ('[' in val and not ']' in val[val.index('['):]) or \
+                (']' in val and not '[' in val[:val.index(']')]):
+                raise ValueError('Host has imbalanced IPv6 brackets.')
         if self._attrs['authority'] == '':
             username = password = port = ''
             self._attrs['authority'] = dict(username=username, 
                                             password=password, 
                                             port=port,
-                                            host=val
+                                            host=val.lower()
                                             )
         else:
-            if ('[' in val and not ']' in val[val.index('['):]) or \
-                (']' in val and not '[' in val[:val.index(']')]):
-                raise ValueError('Host has imbalanced IPv6 brackets.')
             self._attrs['authority']['host'] = val.lower()
 
     @property
@@ -120,16 +120,15 @@ class Murl(object):
         # We want to extract the domain + public suffix
             LOC = 'data/public_suffix_list.dat'
             DATA_PATH = pkg_resources.resource_filename(__name__, LOC)
-            content = open(DATA_PATH)
-            public_suffix = ''
-            for i, line in enumerate(content):
-                if not line.startswith('//') and not line.startswith('\n'):
-                    suffix = '.' + line.split('\n')[0]
-                    if suffix in self.host and \
-                    self.host.rfind(suffix) + len(suffix) == len(self.host) and \
-                     len(public_suffix) < len(suffix):
-                        public_suffix = suffix
-            
+            with open(DATA_PATH) as content:
+                public_suffix = ''
+                for i, line in enumerate(content):
+                    if not line.startswith('//') and not line.startswith('\n'):
+                        suffix = '.' + line.split('\n')[0]
+                        if suffix in self.host and \
+                        self.host.rfind(suffix) + len(suffix) == len(self.host) and \
+                         len(public_suffix) < len(suffix):
+                            public_suffix = suffix           
             if public_suffix != '':
                 beginSuffix = self.host.rfind(public_suffix)
                 beginDomain = self.host.rfind('.', 0, beginSuffix)
@@ -269,7 +268,7 @@ class Murl(object):
         Params:
             - key (str): key whose value(s) you want to change.
             - newVal (str): new value instead of the pre-existing value(s).
-            - val (str): Optional. Old value if only one value is to be changed instead of all.
+            - val (str): Old value if only one value is to be changed instead of all.
             - valEncoded (bool): Optional. True if old value is already percent-encoded.
             - newValEncoded (bool): Optional. True if new value is already percent-encoded.
             - keyEncoded (bool): Optional. True if key is already percent-encoded.
@@ -324,7 +323,7 @@ class Murl(object):
         On set, expects a value that is not already percent-encoded.
         """
         return None if self._attrs['fragment'] == '' \
-                else urlende.decode(self._attrs['fragment'], safe='')
+                else urlende.decode(self._attrs['fragment'])
 
     @fragment.setter
     def fragment(self, val):
