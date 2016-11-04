@@ -48,7 +48,6 @@ Installation
 ::
 	from mrf_murl import Murl
 
-.. note:: murl is written in Python 3.
 
 General Use
 ~~~~~~~~~~~

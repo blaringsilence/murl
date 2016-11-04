@@ -2,12 +2,12 @@ from setuptools import setup
 setup(
   name = 'mrf-murl',
   packages = ['mrf_murl'], 
-  version = '0.0.5',
+  version = '0.1',
   description = 'A URI manipulation tool aimed at web use.',
   author = 'Mariam Maarouf',
   author_email = 'mrf.mariam@gmail.com',
   url = 'https://github.com/blaringsilence/murl',
-  download_url = 'https://github.com/blaringsilence/murl/tarball/0.0.5', 
+  download_url = 'https://github.com/blaringsilence/murl/tarball/0.1', 
   keywords = ['uri', 'web'], 
   include_package_data = True,
   classifiers = [
