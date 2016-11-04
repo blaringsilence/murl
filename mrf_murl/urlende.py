@@ -18,6 +18,8 @@ def encode(part, safe='/'):
     - safe (str, put together if more than 1 char): Optional. Char(s) not to encode
     along with SAFE_CHARS. Reserved chars, for example.
     """
+    if type(part) is int: # for port
+        return part
     part = part.replace('%', '%25') # so nothing gets encoded twice
     total_safe = safe + SAFE_CHARS + '%'
     for i in range(256):
@@ -28,7 +30,7 @@ def encode(part, safe='/'):
     return part
 
 def encode_query(part, plus=True, safe=''):
-    """Encode something that is part of a query (key, or value) or path.
+    """Encode something that is part of a query (key, or value).
     Params:
 
     - part (str): key or value.
@@ -47,6 +49,8 @@ def decode(part):
 
     - part (str): percent-encoded URI component.
     """
+    if type(part) is int: # for port
+        return part
     all_parts = part.split('%')
     part_list = all_parts[1:]
     res = [all_parts[0]]
@@ -69,3 +73,11 @@ def decode_query(part, plus=True):
         part = part.replace('+', ' ')
     part = decode(part)
     return part
+
+def isEncoded(part, plus=False, safe='/'):
+    if type(part) is not int:
+        safe += SAFE_CHARS + '%'
+        for ch in part:
+            if ch not in safe:
+                return False
+    return True

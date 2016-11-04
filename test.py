@@ -7,10 +7,13 @@ class TestCommonParse(unittest.TestCase):
     with all the components present.
     """
     def setUp(self):
-        self.murl = Murl('http://usr:pw@blog.test.com.eg:122/path/to/happiness?this=that#frag')
+        self.murl = Murl('http://usr:pw@blog.test.com.eg'\
+                    +':122/path/to/happiness?this=that#frag')
 
     def test_string_representation(self):
-        self.assertEqual(str(self.murl), 'http://usr:pw@blog.test.com.eg:122/path/to/happiness?this=that#frag')
+        """String representation should be = re-constructed URI."""
+        self.assertEqual(str(self.murl), 'http://usr:pw@blog.test.com.eg'\
+                                    +':122/path/to/happiness?this=that#frag')
 
     def test_scheme(self):
         self.assertEqual(self.murl.scheme, 'http')
@@ -43,8 +46,7 @@ class TestCommonParse(unittest.TestCase):
         self.assertEqual(self.murl.fragment, 'frag')
 
 class TestCommonCreate(unittest.TestCase):
-    """Test dynamically add/change components
-    """
+    """Test dynamically add/change components."""
     def setUp(self):
         self.murl = Murl()
 
@@ -70,7 +72,8 @@ class TestCommonCreate(unittest.TestCase):
     def test_set_auth(self):
         self.murl.host = 'blog.test.com.eg' # to avoid ValueError here
         self.murl.auth = dict(username='usr', password='pw')
-        self.assertEqual(self.murl.auth, dict(username='usr', password='pw'))
+        self.assertEqual(self.murl.auth, dict(username='usr',\
+                                            password='pw'))
 
     def test_fail_auth_no_host(self):
         with self.assertRaises(ValueError):
@@ -85,7 +88,8 @@ class TestCommonCreate(unittest.TestCase):
         self.murl.auth = dict(username='usr', password='pw')
         self.murl.username = 'usr2'
         self.murl.password = 'pw2'
-        self.assertEqual(self.murl.auth, dict(username='usr2', password='pw2'))
+        self.assertEqual(self.murl.auth, dict(username='usr2',\
+                                             password='pw2'))
 
     def test_fail_username_no_auth(self):
         self.murl.host = 'blog.test.com.eg'
@@ -155,6 +159,70 @@ class TestCommonCreate(unittest.TestCase):
         self.murl.fragment = 'frag'
         self.assertEqual(self.murl.fragment, 'frag')
 
+class TestCornerCases(unittest.TestCase):
+    """Test the corner case uses."""
+    def test_parse_relative_url(self):
+        murl = Murl('../path/to/happiness?this=that#frag')
+        self.assertEqual(murl.path, '../path/to/happiness') 
+        self.assertEqual(murl.fragment, 'frag')
+        self.assertEqual(murl.getQuery('this'), ['that'])
+        self.assertEqual(murl.scheme, None)
+
+    def test_parse_urn(self):
+        murl = Murl('urn:example:mammal:monotreme:echidna')
+        self.assertEqual(murl.scheme, 'urn')
+        self.assertEqual(murl.path, 'example:mammal:monotreme:echidna')
+
+    def test_create_with_different_delimeter(self):
+        murl = Murl('http://test.com', queryDelim=';')
+        murl.addQuery('this', 'that')
+        murl.addQuery('this', 'those')
+        self.assertIs(murl.queryString == '?this=that;this=those'\
+                     or murl.queryString == '?this=those;this=that', True)
+
+    def test_unencoded_auth(self):
+        murl = Murl('http://test.com')
+        murl.auth = dict(username='dave@david', password='&unsafe')
+        self.assertEqual(murl.username, 'dave@david') 
+        self.assertEqual(murl.password, '&unsafe')
+        self.assertEqual(str(murl), 'http://dave%40david:%26unsafe@test.com')
+
+    def test_unencoded_query(self):
+        murl = Murl('http://test.com')
+        murl.addQuery('hello&', 'world;')
+        self.assertEqual(murl.getQuery('hello&'), ['world;'])
+        self.assertEqual(str(murl), 'http://test.com?hello%26=world%3B')
+
+    def test_encoded_query(self):
+        murl = Murl('http://test.com')
+        murl.addQuery('hello%26', 'world%3B')
+        self.assertEqual(murl.getQuery('hello&'), ['world;'])
+        self.assertEqual(murl.getQuery('hello%26'), ['world;'])
+        self.assertEqual(str(murl), 'http://test.com?hello%26=world%3B')
+
+    def test_unencoded_fragment(self):
+        murl = Murl('http://test.com')
+        murl.fragment = 'haha lol'
+        self.assertEqual(murl.fragment, 'haha lol')
+        self.assertEqual(str(murl), 'http://test.com#haha%20lol')
+
+    def test_encoded_fragment(self):
+        murl = Murl('http://test.com')
+        murl.fragment = 'haha%20lol'
+        self.assertEqual(murl.fragment, 'haha lol')
+        self.assertEqual(str(murl), 'http://test.com#haha%20lol')
+
+    def test_unencoded_path(self):
+        murl = Murl('http://test.com')
+        murl.path = 'path/to /happiness'
+        self.assertEqual(str(murl), 'http://test.com/path/to%20/happiness')
+        self.assertEqual(murl.path, 'path/to%20/happiness')
+
+    def test_encoded_path(self):
+        murl = Murl('http://test.com')
+        murl.path = 'path/to%20/happiness'
+        self.assertEqual(str(murl), 'http://test.com/path/to%20/happiness')
+        self.assertEqual(murl.path, 'path/to%20/happiness')
 
 
 

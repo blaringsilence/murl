@@ -64,7 +64,7 @@ class Murl(object):
 
     def _getAuthProperty(self, prop):
         return None if self._attrs['authority'] == '' or \
-        self._attrs['authority'][prop] == '' else self._attrs['authority'][prop]
+        self._attrs['authority'][prop] == '' else urlende.decode(self._attrs['authority'][prop])
 
     def _setAuthProperty(self, prop, val):
         other = 'password' if prop == 'username' else 'username'
@@ -77,7 +77,8 @@ class Murl(object):
         elif prop == 'port' and (type(val) is not int or val < 1 or val > 65535):
             raise ValueError('Port number has to be an int between 1 and 65535 inclusive.')
         else: 
-            self._attrs['authority'][prop] = val
+            valEncoded = urlende.isEncoded(val, safe='')
+            self._attrs['authority'][prop] = val if valEncoded else urlende.encode(val, safe='')
 
     @property
     def host(self):
@@ -143,12 +144,14 @@ class Murl(object):
         Raises *ValueError* on set if: 
 
         - Value is not a dict with the keys 'username' and 'password'.
+
+        On set, detects if username/password are already percent-encoded.
         """
         notFound = self._attrs['authority'] == '' or \
                    self._attrs['authority']['username'] == ''
         return None if notFound \
-                else dict(username = self._attrs['authority']['username'],
-                         password = self._attrs['authority']['password'])
+                else dict(username = urlende.decode(self._attrs['authority']['username']),
+                         password = urlende.decode(self._attrs['authority']['password']))
 
     @auth.setter
     def auth(self, authdict):
@@ -157,8 +160,10 @@ class Murl(object):
                             +'Add host using the \'host\' property.')
         elif type(authdict) is dict and 'username' in authdict and \
             'password' in authdict:
-            self._attrs['authority']['username'] = authdict['username']
-            self._attrs['authority']['password'] = authdict['password'] 
+            u,p = authdict['username'],authdict['password']
+            uEncoded,pEncoded = urlende.isEncoded(u, safe=''),urlende.isEncoded(p, safe='')
+            self._attrs['authority']['username'] = u if uEncoded else urlende.encode(u, safe='')
+            self._attrs['authority']['password'] = p if pEncoded else urlende.encode(p, safe='') 
         else:
             raise ValueError('Auth value must be a dict with the keys '
                             +'\'username\' and \'password\'.')
@@ -169,6 +174,8 @@ class Murl(object):
         
         - Host has not yet been set.
         - Password is not already set.
+
+        On set, detects if username is already percent-encoded.
         """
         return self._getAuthProperty('username')
 
@@ -182,6 +189,8 @@ class Murl(object):
         
         - Host has not yet been set.
         - Username is not already set.
+
+        On set, detects if password is already percent-encoded.
         """
         return self._getAuthProperty('password')
 
@@ -207,8 +216,9 @@ class Murl(object):
         """Get or set path. Returns *ValueError* on set if:
         
         - Path starts with two forward slashes.
-
-        Expects an encoded path on set. To encode path, see urlende.encode_query().
+        
+        On set, detects if path is already percent-encoded.
+        On get, unlike other components, the encoded path is returned.
         """
         return None if self._attrs['path'] == '' else self._attrs['path']
     
@@ -216,20 +226,21 @@ class Murl(object):
     def path(self, val):
         if val.startswith('//'):
             raise ValueError('Path cannot start with two forward slashes.')
-        self._attrs['path'] = val
+        self._attrs['path'] = val if urlende.isEncoded(val) else urlende.encode(val)
 
-    def addQuery(self, key, val, keyEncode=True, valEncode=True, spaceIsPlus=True):
+    def addQuery(self, key, val, spaceIsPlus=True):
         """Add a single key=value pair to the Query part.
+        Function will detect if key/value is already encoded.
         Params:
             - key (str): key for this pair. Can be existing key to add to its values.
             - val (str): value for this pair.
-            - keyEncode (bool): Optional. True if key is already percent-encoded.
-            - valEncode (bool): Optional. True if val is already percent-encoded.
             - spaceIsPlus (bool): Optional. True if space should be encoded as + instead of %20.
         """
+        keyEncoded = urlende.isEncoded(key, plus=spaceIsPlus, safe='')
+        valEncoded = urlende.isEncoded(val, plus=spaceIsPlus, safe='')
         oldQ = self._attrs['query']
-        key = urlende.encode_query(key, spaceIsPlus) if keyEncode else key 
-        val = urlende.encode_query(val, spaceIsPlus) if valEncode else val
+        key = key if keyEncoded else urlende.encode_query(key, spaceIsPlus) 
+        val = val if valEncoded else urlende.encode_query(val, spaceIsPlus)
         if oldQ == '': # empty
             temp = {}
             temp[key.lower()] = [val]
@@ -239,15 +250,16 @@ class Murl(object):
         else:
             self._attrs['query'][key.lower()] = [val]
 
-    def getQuery(self, key, decodeVal=True, keyEncoded=False, spaceIsPlus=True):
+    def getQuery(self, key, decodeVal=True, spaceIsPlus=True):
         """Get list of values for a given key. Raises a *KeyError* if:
             - Key does not exist in this URI's Query.
+        Function will detect if key is already encoded.
         Params:
             - key (str): key whose values you want as a list.
             - decodeVal (bool): Optional. True if values are to be returned decoded.
-            - keyEncoded (bool): Optional. True if key is already percent-encoded.
             - spaceIsPlus (bool): Optional. True if space should be encoded as + instead of %20.
         """
+        keyEncoded = urlende.isEncoded(key, plus=spaceIsPlus, safe='')
         if self._attrs['query'] != '':
             key = key if keyEncoded else urlende.encode_query(key, spaceIsPlus)
             arr = self._attrs['query'][key.lower()]
@@ -260,42 +272,41 @@ class Murl(object):
         else:
             raise KeyError('Key does not exist.')
 
-    def changeQuery(self, key, newVal, val=None, valEncoded=False, newValEncoded=False, keyEncoded=False, spaceIsPlus=True):
+    def changeQuery(self, key, newVal, val=None, spaceIsPlus=True):
         """Change one or all values for a specific key. Raises a *KeyError* if:
             - Key does not exist in the URI's Query.
         And a *ValueError* if:
             - A value is specified but it does not exist for this key.
+        Function detects if key/values are already encoded.
         Params:
             - key (str): key whose value(s) you want to change.
             - newVal (str): new value instead of the pre-existing value(s).
             - val (str): Old value if only one value is to be changed instead of all.
-            - valEncoded (bool): Optional. True if old value is already percent-encoded.
-            - newValEncoded (bool): Optional. True if new value is already percent-encoded.
-            - keyEncoded (bool): Optional. True if key is already percent-encoded.
             - spaceIsPlus (bool): Optional. True if space should be encoded as + instead of %20.
         """
         # 1. Remove current query
-        self.removeQuery(key, val, valEncoded, keyEncoded, spaceIsPlus)
+        self.removeQuery(key, val, spaceIsPlus)
         # 2. Add the new query
-        self.addQuery(key, newVal, not keyEncoded, not newValEncoded, spaceIsPlus)
+        self.addQuery(key, newVal, spaceIsPlus)
 
-    def removeQuery(self, key, val=None, valEncoded=False, keyEncoded=False, spaceIsPlus=True):
+    def removeQuery(self, key, val=None, spaceIsPlus=True):
         """Remove one or all values for a specific key. Raises a *KeyError* if:
             - Key does not exist in the URI's Query.
         And a *ValueError* if:
             - A value is specified but it does not exist for this key.
+        Function detects if key/value are already encoded.
         Params:
             - key (str): key whose value(s) you want to delete.
             - val (str): Optional. Current value if only one value is to be deleted instead of all.
-            - valEncoded (bool): Optional. True if value is already percent-encoded.
-            - keyEncoded (bool): Optional. True if key is already percent-encoded.
             - spaceIsPlus (bool): Optional. True if space should be encoded as + instead of %20.
         """
+        keyEncoded = urlende.isEncoded(key, plus=spaceIsPlus, safe='')
         key = key if keyEncoded else urlende.encode_query(key, spaceIsPlus)
         if self._attrs['query'] != '' and key in self._attrs['query']: 
             if val is None:
                 del self._attrs['query'][key.lower()]
             else:
+                valEncoded = urlende.isEncoded(val)
                 val = val if valEncoded else urlende.encode_query(val, spaceIsPlus)
                 arr = self._attrs['query'][key.lower()]
                 if val in arr:
@@ -320,11 +331,12 @@ class Murl(object):
     def fragment(self):
         """Get or set the fragment of the URI. 
         Returns a decoded fragment on get.
-        On set, expects a value that is not already percent-encoded.
+        On set, detects if fragment is already percent encoded.
         """
         return None if self._attrs['fragment'] == '' \
                 else urlende.decode(self._attrs['fragment'])
 
     @fragment.setter
     def fragment(self, val):
-        self._attrs['fragment'] = urlende.encode(val, safe='')
+        fragEncoded = urlende.isEncoded(val, safe='')
+        self._attrs['fragment'] = val if fragEncoded else urlende.encode(val, safe='')
