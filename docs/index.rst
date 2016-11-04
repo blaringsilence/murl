@@ -151,7 +151,7 @@ Docs
 .. _urllib: https://docs.python.org/3/library/urllib.html
 .. _RFC 3986: https://tools.ietf.org/html/rfc3986
 .. _Public Suffix list: https://publicsuffix.org/
-.. _Logo Credit: http://www.flaticon.com/authors/vectors-market
+.. _Logo Credit: http://www.flaticon.com/authors/freepik
 .. _in my blog post: http://blog.maarouf.me/post/151745263197/murl-init
 
 
