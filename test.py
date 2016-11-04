@@ -2,7 +2,6 @@
 import unittest
 from mrf_murl import Murl
 
-
 class TestCommonParse(unittest.TestCase):
     """Test the common parsing case: complete, absolute web URL, 
     with all the components present.
