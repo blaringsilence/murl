@@ -127,6 +127,7 @@ def divideURL(url, queryDelim='&'):
     - There is more than one colon in Authority outside username:password and without the host being IPv6.
 
     Params:
+    
     - url (str): the URI to be divided.
     - queryDelim (str): Optional. Delimeter for the query key=value pairs. Recommended: '&' or ';'.
     """
@@ -208,6 +209,7 @@ def _assemblePath(authority, path):
 def assembleURL(urldict, queryDelim='&'):
     """Re-assemble a URL dict divided by this module, or uses same syntax.
     Params:
+
     - urldict (dict with keys as the ones returned by divideURL()).
     - queryDelim (str): Optional. Delimeter for the query key=value pairs. Recommended to be '&' or ';'.
     """
