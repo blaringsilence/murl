@@ -9,6 +9,7 @@ setup(
   url = 'https://github.com/blaringsilence/murl',
   download_url = 'https://github.com/blaringsilence/murl/tarball/0.0.4', 
   keywords = ['uri', 'web'], 
+  include_package_data = True,
   classifiers = [
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
