@@ -1,6 +1,6 @@
 # murl
 
-[![Documentation Status](https://readthedocs.org/projects/mrf-murl/badge/?version=latest)](http://mrf-murl.readthedocs.io/en/latest/?badge=latest)  [![Build Status](https://travis-ci.org/blaringsilence/murl.svg?branch=master)](https://travis-ci.org/blaringsilence/murl) [![PyPI version](https://badge.fury.io/py/mrf-murl.svg)](https://badge.fury.io/py/mrf-murl)
+[![Documentation Status](https://readthedocs.org/projects/mrf-murl/badge/?version=latest)](http://mrf-murl.readthedocs.io/en/latest/?badge=latest)  [![Build Status](https://travis-ci.org/mariamrf/murl.svg?branch=master)](https://travis-ci.org/blaringsilence/murl) [![PyPI version](https://badge.fury.io/py/mrf-murl.svg)](https://badge.fury.io/py/mrf-murl)
 
 A URI Manipulation module aimed at web use. Motivated by the **Quora challenge** (see note below), which is why `murl` has its own implementation of some functions in `urllib` and `urlparse`.
 
