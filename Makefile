@@ -1,0 +1,2 @@
+bootstrap:
+	@pip install -e .
