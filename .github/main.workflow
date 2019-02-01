@@ -1,10 +1,10 @@
 workflow "New workflow" {
   on = "push"
-  resolves = ["mariamrf/pypi-publish-action@master"]
+  resolves = ["mariamrf/py-package-publish-action@master"]
 }
 
-action "mariamrf/pypi-publish-action@master" {
-  uses = "mariamrf/pypi-publish-action@master"
+action "mariamrf/py-package-publish-action@master" {
+  uses = "mariamrf/py-package-publish-action@master"
   secrets = ["TWINE_PASSWORD", "TWINE_USERNAME"]
   env = {
     BRANCH = "master"
