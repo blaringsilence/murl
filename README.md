@@ -6,7 +6,7 @@ A URI Manipulation module aimed at web use. Motivated by the **Quora challenge**
 
 This README only has a very brief outline. Complete documentation can be found [here](http://mrf-murl.readthedocs.io).
 
-**Note:** As of sometime between October 13th and October 29th, 2016, this challenge was removed from Quora. A copy of the prompt, however, can be found [in my blog post](http://blog.maarouf.me/post/151745263197/murl-init).
+**Note:** As of sometime between October 13th and October 29th, 2016, this challenge was removed from Quora. A copy of the prompt, however, can be found [in my blog post](https://blog.mariam.dev/2016/10/13/murl-init.html).
 
 ## URI Syntax
 ` scheme:[//[user:password@]host[:port]][/]path[?query][#fragment]`
