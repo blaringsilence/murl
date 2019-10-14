@@ -2,7 +2,7 @@ from setuptools import setup
 setup(
   name = 'mrf-murl',
   packages = ['mrf_murl'], 
-  version = '0.1.1',
+  version = '0.1.2',
   description = 'A URI manipulation tool aimed at web use.',
   author = 'Mariam Maarouf',
   author_email = 'mrf.mariam@gmail.com',
